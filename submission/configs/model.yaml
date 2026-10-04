@@ -1,0 +1,6 @@
+# Canonical model for the root agent and every sub-agent. This file is the ONLY
+# place the model id appears, so swapping is a one-file edit:
+#   - submission:  gemma-4-31b-it-qat-w4a16-ct
+#   - local test:  <your local model id>
+# Restore the submission value before packaging.
+gemma-4-31b-it-qat-w4a16-ct

@@ -1,0 +1,19 @@
+# Per-task budget overrides for the agent loop (container setup is excluded).
+#
+# Alignment with the harness warning: budget_warning is attached to tool
+# responses once tool_calls_used >= 20 AND <= 10 calls remain. With
+# max_tool_calls: 60 it first appears at used=50 — the final-10-call window the
+# system prompt spends on verify + cleanup + submit_patch.
+#
+# Why 60 rather than 40: every agent_tool delegation spends its own internal
+# tool calls from this same session budget (repro_builder ~3-6, diff_critic
+# ~2-3, plus the root's call to each). Those fixed costs must not crowd out
+# exploration, so exploration headroom is raised from 30 to 50 calls while the
+# finalize window stays at 10. max_turns is raised to absorb the extra hops.
+# timeout_seconds caps a single run_command at 3 minutes so one hung command
+# cannot burn the 45-minute session.
+evaluation:
+  timeout_seconds: 180
+  max_tool_calls: 60
+  max_time_minutes: 45.0
+  max_turns: 150

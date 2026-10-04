@@ -1,0 +1,22 @@
+# Review worker. Attached to the root as an agent_tool with
+# skip_summarization: true. Runs with include_contents: "none" so it judges the
+# DIFF on its own merits in a fresh context, rather than inheriting the root's
+# reasoning about why the change is right — that inherited bias is exactly what
+# makes a small model's self-review useless.
+agent_class: LlmAgent
+name: diff_critic
+model: !include ../configs/model.yaml
+description: >-
+  Independent reviewer of the working-tree diff against the issue. Returns PASS
+  or a short list of concrete correctness, scope, and hygiene issues.
+instruction: !include ../prompts/critic.md
+generate_content_config: !include ../configs/sampling_analyzer.yaml
+include_contents: "none"
+# agent_tool delegation only (no sub_agents transfer relationship). Set
+# defensively so the model returns a tool result instead of handing off.
+disallow_transfer_to_parent: true
+disallow_transfer_to_peers: true
+tools:
+  - run_command
+  - read_file
+  - get_status

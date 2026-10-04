@@ -1,0 +1,50 @@
+# Root agent for the swegemma SWE task.
+#
+# Architecture: one root LlmAgent plus two READ-ONLY sub-agents attached as
+# agent_tools with skip_summarization: true. Their internal turns and any raw
+# file/test output stay OUT of the root's visible history; only their final
+# answer returns. That is the whole point given a 32k window — broad searches
+# and full pytest logs must not displace the issue text and the edit.
+agent_class: LlmAgent
+name: swe_agent
+
+# Single source of truth for the base model. Every agent/sub-agent includes the
+# same file, so a local-testing override is a one-file swap (see configs/model.yaml).
+model: !include configs/model.yaml
+
+description: >-
+  Software-engineering agent that fixes a GitHub issue in /workspace: explore,
+  make a minimal edit, verify with tests, then submit a patch.
+
+instruction: !include prompts/system.md
+generate_content_config: !include configs/sampling.yaml
+
+# Unused until LoRA weights are added; point at a dir under adapters/ then.
+# See adapters/README.md for the expected filenames and size ceiling.
+# adapter: adapters/<adapter_name>
+
+tools:
+  - run_command
+  - read_file
+  - edit_file
+  - write_file
+  - submit_patch
+  - get_status
+  - search_similar_code
+  - get_code_neighbors
+  - get_code_subgraph
+  # Delegation mechanism (a): call a sub-agent like a function. skip_summarization
+  # keeps its internal turns out of the root history; the returned answer tells
+  # us whether anything useful came back.
+  - agent_tool:
+      config_path: sub_agents/code_explorer.yaml
+      skip_summarization: true
+  - agent_tool:
+      config_path: sub_agents/test_verifier.yaml
+      skip_summarization: true
+  - agent_tool:
+      config_path: sub_agents/repro_builder.yaml
+      skip_summarization: true
+  - agent_tool:
+      config_path: sub_agents/diff_critic.yaml
+      skip_summarization: true

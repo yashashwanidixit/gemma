@@ -1,0 +1,26 @@
+# Read-only exploration worker. Attached to the root as an agent_tool with
+# skip_summarization: true, so its search turns and file dumps never enter the
+# root's visible history. include_contents: "none" makes it stateless: it acts
+# only on the caller's question, keeping its own context small.
+agent_class: LlmAgent
+name: code_explorer
+model: !include ../configs/model.yaml
+description: >-
+  Read-only code search/analysis worker. Given a specific question, locates
+  files, symbols, and call sites and returns a compact, evidence-backed answer.
+instruction: !include ../prompts/explorer.md
+generate_content_config: !include ../configs/sampling_analyzer.yaml
+include_contents: "none"
+# Delegated via agent_tool (function call), not sub_agents (transfer), so there
+# is no parent/peer to transfer to. Set defensively: if the compiler registers
+# agent_tool targets as sub-agents, this stops the model from attempting a
+# handoff instead of returning a tool result the caller is waiting for.
+disallow_transfer_to_parent: true
+disallow_transfer_to_peers: true
+tools:
+  - read_file
+  - run_command
+  - search_similar_code
+  - get_code_neighbors
+  - get_code_subgraph
+  - get_status

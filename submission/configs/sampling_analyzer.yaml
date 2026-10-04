@@ -1,0 +1,18 @@
+# Sampling for the two read-only sub-agents (code_explorer, test_verifier).
+#
+# Separate from sampling.yaml on purpose: their FINAL answer is returned INTO
+# the root context, so a lower temperature and a shorter output/thinking budget
+# keep their reports short and deterministic, leaving the root's 32k window for
+# the actual fix. Keep the field set identical to sampling.yaml.
+temperature: 0.1
+top_p: 0.9
+top_k: 20
+max_output_tokens: 4096
+presence_penalty: 0.0
+frequency_penalty: 0.0
+stop_sequences: []
+response_mime_type: text/plain
+seed: 0
+thinking_config:
+  thinking_budget: 2048
+  include_thoughts: true

@@ -1,0 +1,24 @@
+# Reproduction worker. Attached to the root as an agent_tool with
+# skip_summarization: true. It writes ONLY under /tmp, confirms the reported bug
+# actually reproduces, and returns the exact command + observed failure, giving
+# the root a fast, stable verification command it can reuse after the edit.
+agent_class: LlmAgent
+name: repro_builder
+model: !include ../configs/model.yaml
+description: >-
+  Builds a minimal failing reproduction of the issue in /tmp and returns the
+  exact repro command and the observed failure.
+instruction: !include ../prompts/repro.md
+generate_content_config: !include ../configs/sampling_analyzer.yaml
+include_contents: "none"
+# agent_tool delegation only (no sub_agents transfer relationship). Set
+# defensively so the model returns a tool result instead of handing off.
+disallow_transfer_to_parent: true
+disallow_transfer_to_peers: true
+# write_file is granted ONLY for /tmp scratch scripts; the prompt forbids any
+# /workspace write, and there is no edit_file at all.
+tools:
+  - run_command
+  - read_file
+  - write_file
+  - get_status

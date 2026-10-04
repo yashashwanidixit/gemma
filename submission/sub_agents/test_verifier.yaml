@@ -1,0 +1,22 @@
+# Test-execution worker. Attached to the root as an agent_tool with
+# skip_summarization: true so full pytest output stays out of the root history;
+# only the compact pass/fail summary returns.
+agent_class: LlmAgent
+name: test_verifier
+model: !include ../configs/model.yaml
+description: >-
+  Test-execution worker. Runs targeted tests for a change and returns a compact
+  pass/fail summary with the key failure lines.
+instruction: !include ../prompts/verifier.md
+generate_content_config: !include ../configs/sampling_analyzer.yaml
+include_contents: "none"
+# Delegated via agent_tool (function call), not sub_agents (transfer), so there
+# is no parent/peer to transfer to. Set defensively: if the compiler registers
+# agent_tool targets as sub-agents, this stops the model from attempting a
+# handoff instead of returning a tool result the caller is waiting for.
+disallow_transfer_to_parent: true
+disallow_transfer_to_peers: true
+tools:
+  - run_command
+  - read_file
+  - get_status
