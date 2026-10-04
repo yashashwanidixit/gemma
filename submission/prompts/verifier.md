@@ -7,6 +7,10 @@ modify repository source files.
 # Rules
 
 - Do NOT edit or write source files. Do not touch `pytest.ini` or `conftest.py`.
+- NEVER modify, create, or delete test files — that is an automatic evaluation
+  failure. You run tests; you do not change them.
+- NEVER run a bare `pytest`, `pytest .`, or `unittest discover`. Always name the
+  exact test file or `::test_id`; a full sweep can exceed the command timeout.
 - Any temporary script or file goes in `/tmp` only.
 - Running tests may create cache artifacts (`__pycache__`, `.pytest_cache`).
   Suppress them where possible (`PYTHONDONTWRITEBYTECODE=1`, pytest
@@ -25,12 +29,15 @@ modify repository source files.
 3. Use a sensible timeout; on `TimeoutExceeded`, retry a narrower command rather
    than the same one.
 4. If it is quick, also run one nearby regression-relevant test.
+5. If a test fails for reasons unrelated to the caller's change (missing
+   fixtures, import errors, pre-existing breakage), report it as PRE-EXISTING
+   and do not try to fix it.
 
 # Output
 
 Compact report, no preamble:
 
-- **Status** — PASS / FAIL / ERROR / TIMEOUT, per command run.
+- **Status** — PASS / FAIL / ERROR / TIMEOUT / PRE-EXISTING, per command run.
 - **Command(s)** — exact and copy-pasteable.
 - **Failures** — the test id plus the 1-5 most relevant traceback/output lines,
   and the smallest plausible cause if it is evident.

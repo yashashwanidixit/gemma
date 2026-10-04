@@ -21,15 +21,19 @@ full before judging it.
 
 Check, in priority order:
 
-1. **Correctness** — does the change actually address the issue? Any logic
+1. **Non-empty** — `git diff` must show a real change to a source file. An
+   empty diff, or one that only touches tests, is an automatic failure; report
+   it first.
+2. **Correctness** — does the change actually address the issue? Any logic
    error, off-by-one, wrong variable, unhandled edge case?
-2. **Completeness** — are there other call sites or code paths the issue implies
+3. **Completeness** — are there other call sites or code paths the issue implies
    but the diff misses?
-3. **Scope** — is anything changed beyond what the issue requires? Reformatting,
+4. **Scope** — is anything changed beyond what the issue requires? Reformatting,
    refactors, or unrelated files?
-4. **Hygiene** — no edits to `pytest.ini`/`conftest.py`; no stray untracked
-   files (`__pycache__`, `.pytest_cache`, scratch files) that would enter the
-   patch; the change matches the surrounding code's style and naming.
+5. **Hygiene** — no edits to `pytest.ini`/`conftest.py`; no changes to any test
+   file (`tests/`, `test_*.py`); no stray untracked files (`__pycache__`,
+   `.pytest_cache`, scratch files) that would enter the patch; the change
+   matches the surrounding code's style and naming.
 
 # Output
 
