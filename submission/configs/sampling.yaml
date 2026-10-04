@@ -1,18 +1,21 @@
 # Root sampling config. Contains ONLY generate_content_config fields.
 #
-# Token budget: one 32k window is shared by system + task + history + thinking
-# + output. max_output_tokens 8192 leaves ~24k for the rest, and history is
-# auto-compacted near 14336 tokens, so per-turn output is deliberately bounded
-# rather than maxed. thinking_budget 4096 is enough for a few sentences of
-# planning per turn without crowding the window or the visible tool call.
+# Token budget: vLLM enforces prompt_tokens + max_output_tokens <= max_model_len
+# (32768). Worst-case prompt is ~20k (14.3k compacted history + ~2.5k system
+# prompt + ~1.5k tool schemas + task/hints), so 8192 leaves ~4.5k of slack;
+# pushing toward 16384 would risk hard failures right at the compaction
+# boundary. thinking_budget 4096 is enough for a few sentences of planning per
+# turn without crowding the visible tool call, which shares this budget.
+#
+# Field set is deliberately minimal: only fields with a non-default effect are
+# kept. Omitted (all no-ops or risky): presence_penalty 0.0, frequency_penalty
+# 0.0, stop_sequences [], and response_mime_type -- a forced MIME type can
+# interfere with tool calling on some stacks, and the harness's own config
+# writer omits it.
 temperature: 0.2
 top_p: 0.95
 top_k: 40
 max_output_tokens: 8192
-presence_penalty: 0.0
-frequency_penalty: 0.0
-stop_sequences: []
-response_mime_type: text/plain
 seed: 0
 thinking_config:
   thinking_budget: 4096
